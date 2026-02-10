@@ -1,6 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import pandas as pd
+from .models import UploadSummary
+
 
 
 @api_view(['GET'])
@@ -42,4 +44,36 @@ def upload_csv(request):
         "type_distribution": type_distribution
     }
 
+    # Save to database
+    UploadSummary.objects.create(
+        total_equipment=total_equipment,
+        average_flowrate=avg_flowrate,
+        average_pressure=avg_pressure,
+        average_temperature=avg_temperature,
+        type_distribution=type_distribution
+    )
+
+    # Keep only last 5 uploads
+    if UploadSummary.objects.count() > 5:
+        oldest = UploadSummary.objects.order_by('created_at').first()
+        oldest.delete()
+
     return Response(summary)
+
+
+@api_view(['GET'])
+def upload_history(request):
+    uploads = UploadSummary.objects.order_by('-created_at')[:5]
+
+    data = []
+    for upload in uploads:
+        data.append({
+            "created_at": upload.created_at,
+            "total_equipment": upload.total_equipment,
+            "average_flowrate": upload.average_flowrate,
+            "average_pressure": upload.average_pressure,
+            "average_temperature": upload.average_temperature,
+            "type_distribution": upload.type_distribution,
+        })
+
+    return Response(data)
