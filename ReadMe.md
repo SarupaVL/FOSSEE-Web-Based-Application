@@ -1,47 +1,92 @@
-# Chemical Equipment Parameter Visualizer (Hybrid Web + Desktop App)
+# Chemical Equipment Parameter Visualizer
 
-## Intern Screening Task – Hybrid Web + Desktop Application
+This is a hybrid web and desktop application developed for the FOSSEE IIT Bombay Intern Screening Task. It allows users to upload, analyze, and visualize chemical equipment data from CSV files.
 
-You are required to build a hybrid application that runs both as a Web Application and a Desktop Application. The project focuses on data visualization and analytics for chemical equipment.
+The project consists of three main components:
+1.  **Backend (Django)** - Handles API requests, data processing, and authentication.
+2.  **Web Frontend (React.js)** - A responsive dashboard for data visualization.
+3.  **Desktop App (PyQt5)** - A native desktop client with the same functionality.
 
-### Project Overview
+## Features Implemented
 
-Create a Web + Desktop application that allows users to upload a CSV file containing a list of chemical equipment with columns such as Equipment Name, Type, Flowrate, Pressure, and Temperature. The Django backend will parse the data, perform analysis, and provide summary statistics via API. Both React (Web) and PyQt5 (Desktop) frontends will consume this API to display data tables, charts, and summaries.
+-   **Data Processing**: Uploads CSV files to calculate total equipment count, average parameters (Flowrate, Pressure, Temperature), and type distribution.
+-   **Visualization**:
+    -   Web: Interactive Bar Charts using Chart.js.
+    -   Desktop: Embedded Matplotlib charts.
+-   **History**: Tracks the last 5 uploads for quick access.
+-   **Reporting**: Generates a PDF report for any analysis result.
+-   **Authentication**: Token-based login system for secure access.
+-   **UI Consistency**: Both platforms share a consistent "Scientific Flat" design with a focus on usability.
 
-### Tech Stack (Fixed)
+## Tech Stack
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Frontend (Web) | React.js + Chart.js | Show table + charts |
-| Frontend (Desktop) | PyQt5 + Matplotlib | Same visualization in desktop |
-| Backend | Python Django + Django REST Framework | Common backend API |
-| Data Handling | Pandas | Reading CSV & analytics |
-| Database | SQLite | Store last 5 uploaded datasets |
-| Version Control | Git & GitHub | Collaboration & submission |
-| Sample Data | sample_equipment_data.csv | Sample CSV file provided for testing & demo |
+-   **Backend**: Python, Django, Django REST Framework
+-   **Web**: React, Vite, Chart.js
+-   **Desktop**: Python, PyQt5, Matplotlib
+-   **Database**: SQLite
 
-### Key Features Required
+---
 
-- **CSV Upload** – Web and Desktop must allow users to upload a CSV file to the backend.
-- **Data Summary API** – Django API should return total count, averages, and equipment type distribution.
-- **Visualization** – Display charts using Chart.js (Web) and Matplotlib (Desktop).
-- **History Management** – Store last 5 uploaded datasets with summary.
-- **PDF Report & Authentication** – Generate PDF report and add basic authentication.
-- **(Extra) Demo Data** – Use the provided sample CSV (sample_equipment_data.csv) for demo and testing.
+## Setup Instructions
 
-### Task Instructions
+### 1. Backend Setup (Django)
 
-Develop both Web and Desktop frontends connected to the same Django backend. The application should demonstrate proper data handling, API integration, and UI/UX consistency.
+First, set up the backend server which powers both applications.
 
-### Submission Guidelines
+```bash
+cd backend
 
-- Source code on GitHub (backend + both frontends)
-- README file with setup instructions (should be made available with the Github Source Code)
-- Short demo video (2–3 minutes)
-- Optional: Deployment link for web version
+# Create and activate virtual environment (Recommended)
+python -m venv venv
+# Windows: venv\Scripts\activate
+# Mac/Linux: source venv/bin/activate
 
-### Submission Link
+# Install dependencies
+pip install -r requirements.txt
 
-Kindly submit all the details in the [Google Form](https://forms.gle/bSiKezbM4Ji9xnw66)
+# Run migrations
+python manage.py migrate
 
+# Create a superuser (for admin access)
+python manage.py createsuperuser
 
+# Start the server
+python manage.py runserver
+```
+The server will start at `http://127.0.0.1:8000`.
+
+### 2. Web Application Setup (React)
+
+Open a new terminal for the web frontend.
+
+```bash
+cd web-frontend
+
+# Install node dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
+
+### 3. Desktop Application Setup (PyQt5)
+
+Open a new terminal for the desktop app.
+
+```bash
+cd desktop-app
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the application
+python main.py
+```
+
+---
+
+## Deployment Note
+
+-   **Web App**: The frontend is configured to use `VITE_API_URL` from the `.env` file. For production (e.g., Vercel), set this variable to your live backend URL.
+-   **Backend**: `settings.py` includes configuration for WhiteNoise to serve static files in production. Ensure `DEBUG = False` and `ALLOWED_HOSTS` are updated when deploying.

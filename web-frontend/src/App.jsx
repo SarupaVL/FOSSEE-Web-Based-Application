@@ -1,9 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import Login from "./components/Login";
+import History from "./components/History";
+import Dashboard from "./components/Dashboard";
+import Navbar from "./components/Navbar";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+import { Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend
+);
 
 function App() {
+  const [token, setToken] = useState(localStorage.getItem("token"));
   const [file, setFile] = useState(null);
   const [summary, setSummary] = useState(null);
+
+  const handleLogout = () => {
+    setToken(null);
+    localStorage.removeItem("token");
+    setSummary(null);
+  };
 
   const uploadFile = async () => {
     if (!file) return;
@@ -11,34 +40,57 @@ function App() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await axios.post(
-      "http://127.0.0.1:8000/api/upload/",
-      formData
-    );
-
-    setSummary(response.data);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/upload/`,
+        formData,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        }
+      );
+      setSummary(response.data);
+    } catch (error) {
+      console.error("Upload failed", error);
+      alert("Upload failed: " + (error.response?.data?.error || "Unknown error"));
+    }
   };
 
-  return (
-    <div style={{ padding: "20px" }}>
-      <h2>Chemical Equipment Visualizer</h2>
+  const chartData = summary ? {
+    labels: Object.keys(summary.type_distribution),
+    datasets: [
+      {
+        label: "Equipment Type Distribution",
+        data: Object.values(summary.type_distribution),
+        backgroundColor: "rgba(75, 192, 192, 0.6)",
+      },
+    ],
+  } : null;
 
-      <input
-        type="file"
-        accept=".csv"
-        onChange={(e) => setFile(e.target.files[0])}
-      />
-
-      <button onClick={uploadFile}>Upload</button>
-
-      {summary && (
-        <div>
-          <p>Total Equipment: {summary.total_equipment}</p>
-          <p>Avg Flowrate: {summary.average_flowrate}</p>
-          <p>Avg Pressure: {summary.average_pressure}</p>
-          <p>Avg Temperature: {summary.average_temperature}</p>
+  if (!token) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'var(--background)' }}>
+        <div className="card">
+          <Login setToken={setToken} />
         </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--background)' }}>
+      <Navbar onLogout={handleLogout} />
+      <div style={{ padding: '2rem 0' }}>
+        <Dashboard
+          summary={summary}
+          chartData={chartData}
+          onUpload={uploadFile}
+          setFile={setFile}
+          file={file}
+        />
+        <History token={token} />
+      </div>
     </div>
   );
 }
